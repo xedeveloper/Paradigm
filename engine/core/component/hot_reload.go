@@ -1,13 +1,12 @@
-package runner
+package core
 
 import (
 	"github.com/fsnotify/fsnotify"
-	core "github.com/xedeveloper/Paradigm/engine/core/component"
 )
 
 type HotReload struct {
 	watcher    *fsnotify.Watcher
-	components map[string]*core.Component
+	components map[string]*Component
 }
 
 func NewHotReload() (*HotReload, error) {
@@ -17,7 +16,7 @@ func NewHotReload() (*HotReload, error) {
 	}
 	return &HotReload{
 		watcher:    watcher,
-		components: make(map[string]*core.Component),
+		components: make(map[string]*Component),
 	}, nil
 }
 
