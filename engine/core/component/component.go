@@ -20,3 +20,20 @@ type ComponentConfig struct {
 	Template string
 	Style    string
 }
+
+func NewComponent(config ComponentConfig) *Component {
+	tmpl := template.Must(template.New(config.Selector).Parse(config.Template))
+	return &Component{
+		Template:  tmpl,
+		Lifecycle: &lifecycle.LifeCycleHooks{},
+	}
+}
+
+func (c *Component) SetState(newState interface{}) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.State = newState
+	if c.Lifecycle.OnUpdate != nil {
+		c.Lifecycle.OnUpdate()
+	}
+}
