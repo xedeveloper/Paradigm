@@ -11,7 +11,7 @@ import (
 
 type Application struct {
 	Router     *Router
-	Components map[string]*ComponentInterface
+	Components map[string]ComponentInterface
 	HotReload  *HotReload
 	Config     *ApplicationConfig
 	server     *http.Server
@@ -27,7 +27,7 @@ type ApplicationConfig struct {
 func NewApplication() *Application {
 	return &Application{
 		Router:     NewRouter(),
-		Components: make(map[string]*ComponentInterface),
+		Components: make(map[string]ComponentInterface),
 		Config: &ApplicationConfig{
 			Port:            "8080",
 			TemplatesDir:    "./templates",
@@ -49,9 +49,9 @@ func (app *Application) Configure(config ApplicationConfig) {
 	}
 }
 
-func (app *Application) RegisterComponent(path string, component *ComponentInterface) {
+func (app *Application) RegisterComponent(path string, component ComponentInterface) {
 	app.Components[path] = component
-	app.Router.AddRoute(path, *component)
+	app.Router.AddRoute(path, component)
 	if app.HotReload != nil {
 		componentPath := fmt.Sprintf("./components/%s", path)
 		app.HotReload.Watch(componentPath)

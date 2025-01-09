@@ -58,3 +58,7 @@ func (c *BaseComponent) GetLifeCycle() *lifecycle.LifeCycleHooks {
 func (c *BaseComponent) Render(w http.ResponseWriter) error {
 	return c.template.Execute(w, c.state)
 }
+
+func (c *BaseComponent) GetTemplate() *template.Template {
+	return c.template
+}
