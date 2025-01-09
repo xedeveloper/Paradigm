@@ -2,16 +2,23 @@ package core
 
 import (
 	"html/template"
+	"net/http"
 	"sync"
 
 	lifecycle "github.com/xedeveloper/Paradigm/engine/core/life_cycle"
 )
 
-type Component struct {
-	Template  *template.Template
-	State     interface{}
-	Lifecycle *lifecycle.LifeCycleHooks
-	Router    *Router
+type ComponentInterface interface {
+	GetTemplate() *template.Template
+	GetState() interface{}
+	GetLifeCycle() *lifecycle.LifeCycleHooks
+	Render(w http.ResponseWriter) error
+}
+
+type BaseComponent struct {
+	template  *template.Template
+	state     interface{}
+	lifecycle *lifecycle.LifeCycleHooks
 	mutex     sync.RWMutex
 }
 
@@ -21,19 +28,33 @@ type ComponentConfig struct {
 	Style    string
 }
 
-func NewComponent(config ComponentConfig) *Component {
+func NewComponent(config ComponentConfig) *BaseComponent {
 	tmpl := template.Must(template.New(config.Selector).Parse(config.Template))
-	return &Component{
-		Template:  tmpl,
-		Lifecycle: &lifecycle.LifeCycleHooks{},
+	return &BaseComponent{
+		template:  tmpl,
+		lifecycle: &lifecycle.LifeCycleHooks{},
 	}
 }
 
-func (c *Component) SetState(newState interface{}) {
+func (c *BaseComponent) SetState(newState interface{}) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
-	c.State = newState
-	if c.Lifecycle.OnUpdate != nil {
-		c.Lifecycle.OnUpdate()
+	c.state = newState
+	if c.lifecycle.OnUpdate != nil {
+		c.lifecycle.OnUpdate()
 	}
+}
+
+func (c *BaseComponent) GetState() interface{} {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+	return c.state
+}
+
+func (c *BaseComponent) GetLifeCycle() *lifecycle.LifeCycleHooks {
+	return c.lifecycle
+}
+
+func (c *BaseComponent) Render(w http.ResponseWriter) error {
+	return c.template.Execute(w, c.state)
 }

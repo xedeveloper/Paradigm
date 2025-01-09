@@ -11,7 +11,7 @@ import (
 
 type Application struct {
 	Router     *Router
-	Components map[string]*Component
+	Components map[string]*ComponentInterface
 	HotReload  *HotReload
 	Config     *ApplicationConfig
 	server     *http.Server
@@ -27,7 +27,7 @@ type ApplicationConfig struct {
 func NewApplication() *Application {
 	return &Application{
 		Router:     NewRouter(),
-		Components: make(map[string]*Component),
+		Components: make(map[string]*ComponentInterface),
 		Config: &ApplicationConfig{
 			Port:            "8080",
 			TemplatesDir:    "./templates",
@@ -49,7 +49,7 @@ func (app *Application) Configure(config ApplicationConfig) {
 	}
 }
 
-func (app *Application) RegisterComponent(path string, component *Component) {
+func (app *Application) RegisterComponent(path string, component *ComponentInterface) {
 	app.Components[path] = component
 	app.Router.AddRoute(path, *component)
 	if app.HotReload != nil {
@@ -64,17 +64,17 @@ func (app *Application) handleRequest(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	if component.Lifecycle.BeforeMount != nil {
-		component.Lifecycle.BeforeMount()
+	if component.GetLifeCycle().BeforeMount != nil {
+		component.GetLifeCycle().BeforeMount()
 	}
 	w.Header().Set("Content-Type", "text/html")
-	err := component.Template.Execute(w, component.State)
+	err := component.GetTemplate().Execute(w, component.GetState())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if component.Lifecycle.AfterMount != nil {
-		component.Lifecycle.AfterMount()
+	if component.GetLifeCycle().AfterMount != nil {
+		component.GetLifeCycle().AfterMount()
 	}
 }
 

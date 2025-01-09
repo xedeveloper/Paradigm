@@ -6,7 +6,7 @@ import (
 
 type HotReload struct {
 	watcher    *fsnotify.Watcher
-	components map[string]*Component
+	components map[string]*ComponentInterface
 }
 
 func NewHotReload() (*HotReload, error) {
@@ -16,7 +16,7 @@ func NewHotReload() (*HotReload, error) {
 	}
 	return &HotReload{
 		watcher:    watcher,
-		components: make(map[string]*Component),
+		components: make(map[string]*ComponentInterface),
 	}, nil
 }
 
